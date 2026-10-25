@@ -11,9 +11,10 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
 
   if (
-    origin === "http://localhost:5173" ||
-    origin === "http://127.0.0.1:5173"
-  ) {
+  origin === "http://localhost:5173" ||
+  origin === "http://127.0.0.1:5173" ||
+  origin === process.env.CLIENT_URL
+) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Vary", "Origin");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
