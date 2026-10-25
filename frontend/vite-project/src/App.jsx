@@ -8,7 +8,7 @@ import Editor from "@monaco-editor/react";
 // For a deployed frontend, set VITE_SOCKET_URL to your Render backend URL.
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL ||
-  "http://localhost:5001";
+  "https://collaborative-code-editor-api-oxz7.onrender.com";
 
 const socket = io(SOCKET_URL, {
   autoConnect: false,
@@ -28,9 +28,9 @@ const App = () => {
   const [connectionStatus, setConnectionStatus] =
     useState("Connecting...");
   const [errorMessage, setErrorMessage] = useState("");
-const [customInput, setCustomInput] = useState("");
-const [output, setOutput] = useState("");
-const [isRunning, setIsRunning] = useState(false);
+  const [customInput, setCustomInput] = useState("");
+  const [output, setOutput] = useState("");
+  const [isRunning, setIsRunning] = useState(false);
   // Prevent a received code update from being emitted again.
   const remoteCodeRef = useRef(null);
   const typingTimeoutRef = useRef(null);
@@ -207,55 +207,57 @@ const [isRunning, setIsRunning] = useState(false);
     }
   };
 
-const runCode = async () => {
-  if (!code.trim()) {
-    setOutput("Please write some code first.");
-    return;
-  }
-
-  setIsRunning(true);
-  setOutput("Running code...");
-
-  try {
-    const response = await fetch("http://localhost:5001/api/run", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code,
-        language,
-        input: customInput,
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      setOutput(result.error || "Failed to run code.");
+  const runCode = async () => {
+    if (!code.trim()) {
+      setOutput("Please write some code first.");
       return;
     }
 
-    const resultOutput = result.output || "";
-    const resultError = result.error || "";
+    setIsRunning(true);
+    setOutput("Running code...");
 
-    if (resultError) {
-      setOutput(
-        resultOutput
-          ? `${resultOutput}\n${resultError}`
-          : resultError
-      );
-    } else if (resultOutput) {
-      setOutput(resultOutput);
-    } else {
-      setOutput("Code executed successfully. No output.");
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || "https://collaborative-code-editor-api-oxz7.onrender.com"}/api/run`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code,
+            language,
+            input: customInput,
+          }),
+        });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setOutput(result.error || "Failed to run code.");
+        return;
+      }
+
+      const resultOutput = result.output || "";
+      const resultError = result.error || "";
+
+      if (resultError) {
+        setOutput(
+          resultOutput
+            ? `${resultOutput}\n${resultError}`
+            : resultError
+        );
+      } else if (resultOutput) {
+        setOutput(resultOutput);
+      } else {
+        setOutput("Code executed successfully. No output.");
+      }
+    } catch (error) {
+      setOutput("Could not connect to the backend. Is it running?");
+    } finally {
+      setIsRunning(false);
     }
-  } catch (error) {
-    setOutput("Could not connect to the backend. Is it running?");
-  } finally {
-    setIsRunning(false);
-  }
-};
+  };
 
 
   if (!joined) {
@@ -341,48 +343,48 @@ const runCode = async () => {
         {errorMessage && <p>{errorMessage}</p>}
       </div>
 
-      
-<div className="editor-wrapper">
-  <div className="editor-toolbar">
-    <button
-      className="run-button"
-      onClick={runCode}
-      disabled={isRunning}
-    >
-      {isRunning ? "Running..." : "▶ Run Code"}
-    </button>
-  </div>
 
-  <div className="monaco-container">
-    <Editor
-      height="100%"
-      language={language}
-      value={code}
-      onChange={handleCodeChange}
-      theme="vs-dark"
-      options={{
-        minimap: { enabled: false },
-        fontSize: 14,
-      }}
-    />
-  </div>
+      <div className="editor-wrapper">
+        <div className="editor-toolbar">
+          <button
+            className="run-button"
+            onClick={runCode}
+            disabled={isRunning}
+          >
+            {isRunning ? "Running..." : "▶ Run Code"}
+          </button>
+        </div>
 
-  <div className="execution-panel">
-    <label htmlFor="custom-input">Custom Input (stdin)</label>
-    <textarea
-      id="custom-input"
-      value={customInput}
-      onChange={(e) => setCustomInput(e.target.value)}
-      placeholder="Enter input for your program here..."
-      rows={3}
-    />
+        <div className="monaco-container">
+          <Editor
+            height="100%"
+            language={language}
+            value={code}
+            onChange={handleCodeChange}
+            theme="vs-dark"
+            options={{
+              minimap: { enabled: false },
+              fontSize: 14,
+            }}
+          />
+        </div>
 
-    <label htmlFor="program-output">Output</label>
-    <pre id="program-output">
-      {output || "Your program output will appear here."}
-    </pre>
-  </div>
-</div>
+        <div className="execution-panel">
+          <label htmlFor="custom-input">Custom Input (stdin)</label>
+          <textarea
+            id="custom-input"
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            placeholder="Enter input for your program here..."
+            rows={3}
+          />
+
+          <label htmlFor="program-output">Output</label>
+          <pre id="program-output">
+            {output || "Your program output will appear here."}
+          </pre>
+        </div>
+      </div>
 
     </div>
   );
