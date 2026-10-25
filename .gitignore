@@ -1,0 +1,6 @@
+node_modules/
+.env
+backend/.env
+frontend/vite-project/.env
+frontend/vite-project/.env.local
+frontend/vite-project/dist/
